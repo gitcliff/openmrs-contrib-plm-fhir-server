@@ -55,6 +55,7 @@ public class ExampleServerDstu2IT {
 		String ourServerBase = "http://localhost:" + port + "/fhir/";
 		ourClient = ourCtx.newRestfulGenericClient(ourServerBase);
 		ourClient.registerInterceptor(new LoggingInterceptor(true));
+		
 		//Create an HTTP basic auth interceptor
 		String username = "hapi";
 		String password = "hapi123";
