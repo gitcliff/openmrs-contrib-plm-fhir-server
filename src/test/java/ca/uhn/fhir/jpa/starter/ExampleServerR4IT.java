@@ -4,8 +4,10 @@ import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.api.CacheControlDirective;
 import ca.uhn.fhir.rest.api.EncodingEnum;
 import ca.uhn.fhir.rest.api.MethodOutcome;
+import ca.uhn.fhir.rest.client.api.IClientInterceptor;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.api.ServerValidationModeEnum;
+import ca.uhn.fhir.rest.client.interceptor.BasicAuthInterceptor;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.util.BundleUtil;
 import org.eclipse.jetty.websocket.api.Session;
@@ -32,12 +34,13 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class, properties =
   {
     "spring.batch.job.enabled=false",
+		"spring.profiles.active=r4",
     "spring.datasource.url=jdbc:h2:mem:dbr4",
-    "hapi.fhir.fhir_version=r4",
     "hapi.fhir.subscription.websocket_enabled=true",
     "hapi.fhir.empi_enabled=true",
     //Override is currently required when using Empi as the construction of the Empi beans are ambiguous as they are constructed multiple places. This is evident when running in a spring boot environment
@@ -156,11 +159,16 @@ public class ExampleServerR4IT {
   @BeforeEach
   void beforeEach() {
 
-    ourCtx = FhirContext.forR4();
-    ourCtx.getRestfulClientFactory().setServerValidationMode(ServerValidationModeEnum.NEVER);
-    ourCtx.getRestfulClientFactory().setSocketTimeout(1200 * 1000);
-    String ourServerBase = "http://localhost:" + port + "/fhir/";
-    ourClient = ourCtx.newRestfulGenericClient(ourServerBase);
-    ourClient.registerInterceptor(new LoggingInterceptor(true));
-  }
+	  ourCtx = FhirContext.forR4();
+	  ourCtx.getRestfulClientFactory().setServerValidationMode(ServerValidationModeEnum.NEVER);
+	  ourCtx.getRestfulClientFactory().setSocketTimeout(1200 * 1000);
+	  String ourServerBase = "http://localhost:" + port + "/fhir/";
+	  ourClient = ourCtx.newRestfulGenericClient(ourServerBase);
+	  ourClient.registerInterceptor(new LoggingInterceptor(true));
+	  //Create an HTTP basic auth interceptor
+	  String username = "hapi";
+	  String password = "hapi123";
+	  IClientInterceptor authInterceptor = new BasicAuthInterceptor(username, password);
+	  ourClient.registerInterceptor(authInterceptor); 
+  } 
 }
