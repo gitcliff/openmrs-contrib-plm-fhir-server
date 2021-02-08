@@ -1,6 +1,10 @@
 package ca.uhn.fhir.jpa.starter;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,10 +19,10 @@ import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 
 @Interceptor
 public class AuthenticationInterceptor {
-	
+
     @Hook(Pointcut.SERVER_INCOMING_REQUEST_POST_PROCESSED)
-    public boolean incomingRequestPostProcessed(HttpServletRequest theRequest,
-            HttpServletResponse theResponse) throws AuthenticationException {
+    public boolean incomingRequestPostProcessed(HttpServletRequest theRequest, HttpServletResponse theResponse)
+            throws AuthenticationException, FileNotFoundException, IOException {
 
         String authHeader = theRequest.getHeader("Authorization");
 
@@ -44,7 +48,11 @@ public class AuthenticationInterceptor {
             
             // Here we test for a hardcoded username & password use to get access to the
             // hapi fhir JPA sever..
-            if (!username.equals("hapi") || !password.equals("hapi123")) {
+            String appConfigPath = Thread.currentThread().getContextClassLoader().getResource("login.properties").getPath();
+            Properties appProps = new Properties();
+            appProps.load(new FileInputStream(appConfigPath));
+            
+            if (!username.equals(appProps.getProperty("username")) || !password.equals(appProps.getProperty("password"))) {
                 throw new AuthenticationException("Invalid username or password");
             }
         }
