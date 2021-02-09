@@ -22,7 +22,7 @@ public class AuthenticationInterceptor {
 
     @Hook(Pointcut.SERVER_INCOMING_REQUEST_POST_PROCESSED)
     public boolean incomingRequestPostProcessed(HttpServletRequest theRequest, HttpServletResponse theResponse)
-            throws AuthenticationException, FileNotFoundException, IOException {
+            throws AuthenticationException, IOException {
 
         String authHeader = theRequest.getHeader("Authorization");
 
