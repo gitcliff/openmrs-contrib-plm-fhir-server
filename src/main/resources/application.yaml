@@ -25,6 +25,9 @@ spring:
   batch:
     job:
       enabled: false
+  login:
+    username: hapi
+    password: hapi123
 
 hapi:
   fhir:
@@ -125,6 +128,8 @@ hapi:
 #        quitWait:
 #    lastn_enabled: true
 
+  
+  
 
 #
 #elasticsearch:

@@ -1,7 +1,6 @@
 package ca.uhn.fhir.jpa.starter;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -11,6 +10,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 
 import ca.uhn.fhir.interceptor.api.Hook;
 import ca.uhn.fhir.interceptor.api.Interceptor;
@@ -18,7 +23,15 @@ import ca.uhn.fhir.interceptor.api.Pointcut;
 import ca.uhn.fhir.rest.server.exceptions.AuthenticationException;
 
 @Interceptor
+@ConfigurationProperties
+@Component
 public class AuthenticationInterceptor {
+
+    @Value("${username}")
+    private String userName;
+
+    @Value("${password}")
+    private String passWord;
 
     @Hook(Pointcut.SERVER_INCOMING_REQUEST_POST_PROCESSED)
     public boolean incomingRequestPostProcessed(HttpServletRequest theRequest, HttpServletResponse theResponse)
@@ -45,14 +58,9 @@ public class AuthenticationInterceptor {
             String username = parts[0].toLowerCase();
             String password = parts[1];
             
-            
             // Here we test for a hardcoded username & password use to get access to the
             // hapi fhir JPA sever..
-            String appConfigPath = Thread.currentThread().getContextClassLoader().getResource("login.properties").getPath();
-            Properties appProps = new Properties();
-            appProps.load(new FileInputStream(appConfigPath));
-            
-            if (!username.equals(appProps.getProperty("username")) || !password.equals(appProps.getProperty("password"))) {
+            if (!username.equals(this.userName) || !password.equals(this.passWord)) {
                 throw new AuthenticationException("Invalid username or password");
             }
         }
