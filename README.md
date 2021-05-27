@@ -189,6 +189,13 @@ spring:
     password: admin
     driverClassName: com.mysql.jdbc.Driver
 ```
+On some systems, it might be necessary to override hibernate's default naming strategy. The naming strategy must be set using spring.jpa.hibernate.physical_naming_strategy. 
+
+```yaml
+spring:
+  jpa:
+    hibernate.physical_naming_strategy: NAME_OF_PREFERRED_STRATEGY
+```
 
 ### PostgreSQL configuration
 
@@ -310,11 +317,11 @@ It is important to use MySQL5Dialect when using MySQL version 5+.
 
 The server may be configured with subscription support by enabling properties in the [application.yaml](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/master/src/main/resources/application.yaml) file:
 
-- `hapi.fhir.subscription.resthook.enabled` - Enables REST Hook subscriptions, where the server will make an outgoing connection to a remote REST server
+- `hapi.fhir.subscription.resthook_enabled` - Enables REST Hook subscriptions, where the server will make an outgoing connection to a remote REST server
 
 - `hapi.fhir.subscription.email.*` - Enables email subscriptions. Note that you must also provide the connection details for a usable SMTP server.
 
-- `hapi.fhir.subscription.websocket.enabled` - Enables websocket subscriptions. With this enabled, your server will accept incoming websocket connections on the following URL (this example uses the default context path and port, you may need to tweak depending on your deployment environment): [ws://localhost:8080/websocket](ws://localhost:8080/websocket)
+- `hapi.fhir.subscription.websocket_enabled` - Enables websocket subscriptions. With this enabled, your server will accept incoming websocket connections on the following URL (this example uses the default context path and port, you may need to tweak depending on your deployment environment): [ws://localhost:8080/websocket](ws://localhost:8080/websocket)
 
 ## Enabling CQL
 
@@ -322,7 +329,7 @@ Set `hapi.fhir.cql_enabled=true` in the [application.yaml](https://github.com/ha
 
 ## Enabling MDM (EMPI)
 
-Set `hapi.fhir.mdm_enabled=true` in the [application.yaml](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/master/src/main/resources/application.yaml) file to enable MDM on this server.  The MDM matching rules are configured in [mdm-rules.json](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/master/src/main/resources/mdm-rules.json).  The rules in this example file should be replaced with actual matching rules appropriate to your data. Note that MDM relies on subscriptions, so for MDM to work, subscriptions must be enabled. 
+Set `hapi.fhir.mdm_enabled=true` in the [application.yaml](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/master/src/main/resources/application.yaml) file to enable MDM on this server.  The MDM matching rules are configured in [mdm-rules.json](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/master/src/main/resources/mdm-rules.json).  The rules in this example file should be replaced with actual matching rules appropriate to your data. Note that MDM relies on subscriptions, so for MDM to work, subscriptions must be enabled.
 
 ## Using Elasticsearch
 
@@ -344,23 +351,14 @@ elasticsearch.schema_management_strategy=CREATE
 
 Set `hapi.fhir.lastn_enabled=true` in the [application.yaml](https://github.com/hapifhir/hapi-fhir-jpaserver-starter/blob/master/src/main/resources/application.yaml) file to enable the $lastn operation on this server.  Note that the $lastn operation relies on Elasticsearch, so for $lastn to work, indexing must be enabled using Elasticsearch.
 
-## Example of a Dockerfile based on distroless images (for lower footprint and improved security)
+## Build the distroless variant of the image (for lower footprint and improved security)
 
-```code
-FROM maven:3.6.3-jdk-11-slim as build-hapi
-WORKDIR /tmp/hapi-fhir-jpaserver-starter
+The default Dockerfile contains a `release-distroless` stage to build a variant of the image
+using the `gcr.io/distroless/java-debian10:11` base image:
 
-COPY pom.xml .
-RUN mvn -ntp dependency:go-offline
-
-COPY src/ /tmp/hapi-fhir-jpaserver-starter/src/
-RUN mvn clean package spring-boot:repackage -Pboot
-
-FROM gcr.io/distroless/java:11
-
-COPY --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/target/ROOT.war /app/main.war
-
-EXPOSE 8080
-WORKDIR /app
-CMD ["main.war"]
+```sh
+docker build --target=release-distroless -t hapi-fhir:distroless .
 ```
+
+Note that distroless images are also automatically build and pushed to the container registry,
+see the `-distroless` suffix in the image tags.
