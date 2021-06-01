@@ -50,13 +50,17 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = Application.class, properties = {
-		"spring.batch.job.enabled=false", "spring.datasource.url=jdbc:h2:mem:dbr4", "hapi.fhir.fhir_version=r4",
-		"hapi.fhir.subscription.websocket_enabled=false", "hapi.fhir.empi_enabled=false",
+		"spring.batch.job.enabled=false",
+		"spring.datasource.url=jdbc:h2:mem:dbr4",
+		"hapi.fhir.fhir_version=r4",
+		"hapi.fhir.subscription.websocket_enabled=false",
+		"hapi.fhir.empi_enabled=false",
 		"hapi.fhir.auto_create_placeholder_reference_targets=true",
 		// Override is currently required when using Empi as the construction of the
 		// Empi beans are ambiguous as they are constructed multiple places. This is
 		// evident when running in a spring boot environment
-		"spring.main.allow-bean-definition-overriding=true" })
+		"spring.main.allow-bean-definition-overriding=true" 
+	})
 public class OperationCollectDataTest {
 
 	private static final String OBS_FILE_PATH = "ObsBundle.json";
